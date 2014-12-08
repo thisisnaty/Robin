@@ -1,23 +1,24 @@
 package robin;
 /**@author Robin Williams (Team 2)*/
-import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.font.FontRenderContext;
 import java.awt.geom.AffineTransform;
+import java.sql.*;
 import java.sql.SQLException;
 import java.util.LinkedList;
+import javax.swing.*;
+import javax.swing.*;
 import static javax.swing.BorderFactory.createEmptyBorder;
+import static javax.swing.SwingConstants.CENTER;
 import javax.swing.border.LineBorder;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableModel;
-import java.sql.*;
-import javax.swing.*;
 //Application class
 public class Robin extends JFrame implements ActionListener{
     //User public structure
@@ -147,7 +148,7 @@ public class Robin extends JFrame implements ActionListener{
     JLabel labelBird, labelRobinTxt;
     //account label
     JLabel labelAccl;
-     //text field where user may choose to search
+    //text field where user may choose to search
     JTextField txtFieldSearch;
     //linked list for subcategories
     LinkedList subcategories;
@@ -182,6 +183,8 @@ public class Robin extends JFrame implements ActionListener{
     JScrollPane spWishlist;
     //scrollpane for user data table
     JScrollPane spUserData;
+    //scrollpane for user data table
+    JScrollPane spUserDataUPDATE;
     //panel for account
     JPanel panelAccount;
     //scrollpane for products owned by user
@@ -205,6 +208,14 @@ public class Robin extends JFrame implements ActionListener{
     PreparedStatement pst;
     //result of query
     ResultSet rs;
+            
+    JTextField updateName;
+    JTextField updateBday;
+    JTextField updateAddress;
+    JTextField updatePhone;
+    JTextField updateEmail;
+        
+
     //Constructor
     public Robin(){
         //label for welcome message
@@ -216,7 +227,7 @@ public class Robin extends JFrame implements ActionListener{
         //Adds window to jframe created in login
         add(window);
         //set size of jframe
-        setSize(2560, 1600);
+        setSize(1300, 715);
         //default jframe configurations
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(null);
@@ -239,8 +250,10 @@ public class Robin extends JFrame implements ActionListener{
         spProducts = new JScrollPane();
         spWishlist = new JScrollPane();
         spUserData = new JScrollPane();
+        spUserDataUPDATE = new JScrollPane();
         spOwnProduct = new JScrollPane();
         panelAccount = new JPanel();
+
         username = "";
         //create text for subcategory label in products
         subCatTxt = new JLabel("");
@@ -279,6 +292,7 @@ public class Robin extends JFrame implements ActionListener{
         txtFieldSearch.setForeground(Color.GRAY);
         txtFieldSearch.setBounds(1100, 27, 150, 35);
         txtFieldSearch.setBorder(new LineBorder(new Color(255, 255, 255, 70), 10));
+
         //set default window settings
         topWindow.setSize(2560, 100);
         topWindow.setLayout(null);
@@ -304,6 +318,14 @@ public class Robin extends JFrame implements ActionListener{
         conn = javaconnection.ConnecrDB();
         rs = null;
         pst = null;
+        
+        updateName = new JTextField("");
+        updateBday = new JTextField("");
+        updateAddress = new JTextField("");
+        updatePhone = new JTextField("");
+        updateEmail= new JTextField("");
+
+
     }
     //window where users login to Robin
     public void Login(){
@@ -409,6 +431,7 @@ public class Robin extends JFrame implements ActionListener{
                             subCatTxt.setVisible(false);
                             panelAccount.setVisible(false);
                             spUserData.setVisible(false);
+                            spUserDataUPDATE.setVisible(false);
                             spWishlist.setVisible(false);
                             spOwnProduct.setVisible(false);
                             //show home panel
@@ -426,6 +449,7 @@ public class Robin extends JFrame implements ActionListener{
                         txtFieldSearch.setForeground(Color.BLACK);
                 }
         });
+
         txtFieldSearch.addKeyListener(new KeyListener() {
                     @Override
                     public void keyTyped(KeyEvent e) {}
@@ -447,6 +471,7 @@ public class Robin extends JFrame implements ActionListener{
                             spProducts.setVisible(false);
                             spSearch.setVisible(false);
                             spUserData.setVisible(false);
+                            spUserDataUPDATE.setVisible(false);
                             spWishlist.setVisible(false);
                             subCatTxt.setVisible(false);
                             panelAccount.setVisible(false);
@@ -724,37 +749,40 @@ public class Robin extends JFrame implements ActionListener{
             //the listener will recognize the user clicking a cell
             table.addMouseListener(new MouseAdapter() {
                     public void mouseClicked(MouseEvent e) {
-                            //if clicked once
-                            if(e.getClickCount() == 1){
-                                    //get selection from table
-                                    JTable target = (JTable)e.getSource();
-                                    int row = target.getSelectedRow();
-                                    int column = target.getSelectedColumn();
-                                    //gets selection
-                                    if(column == 1) {
-                                        Image starS = Toolkit.getDefaultToolkit().getImage
-                                        (this.getClass().getResource("starS.png"));
-                                        ImageIcon starSicon = new ImageIcon(starS);
-                                        Image starU = Toolkit.getDefaultToolkit().getImage
-                                        (this.getClass().getResource("starU.png"));                                        
-                                        ImageIcon starUicon = new ImageIcon(starU);
-                                        
-                                        //find product
-                                        Object base = products.get(row+1);
-                                        Product aux = (Product) base;
-                                        //add product to wish list if not in wish list
-                                        if(!isOnWishlist(aux.productId)){
-                                            addWishList(aux.productId);
-                                        }
-                                        //if not in wish list remove
-                                        else{
-                                            removeWishList(aux.productId);
-                                        }
-                                        //refreshes table
-                                        table.getValueAt(row, column);
-                                        table.revalidate();
-                                        table.repaint();
-                                    }}}});
+                        //if clicked once
+                        if(e.getClickCount() == 1){
+                            //get selection from table
+                            JTable target = (JTable)e.getSource();
+                            int row = target.getSelectedRow();
+                            int column = target.getSelectedColumn();
+                            //gets selection
+                            if(column == 1) {
+                                Image starS = Toolkit.getDefaultToolkit().getImage
+                                (this.getClass().getResource("starS.png"));
+                                ImageIcon starSicon = new ImageIcon(starS);
+                                Image starU = Toolkit.getDefaultToolkit().getImage
+                                (this.getClass().getResource("starU.png"));                                        
+                                ImageIcon starUicon = new ImageIcon(starU);
+
+                                //find product
+                                Object base = products.get(row+1);
+                                Product aux = (Product) base;
+                                //add product to wish list if not in wish list
+                                if(!isOnWishlist(aux.productId)){
+                                    addWishList(aux.productId);
+                                }
+                                //if not in wish list remove
+                                else{
+                                    removeWishList(aux.productId);
+                                }
+                                //refreshes table
+                                table.getValueAt(row, column);
+                                table.revalidate();
+                                table.repaint();
+                            }
+                        }
+                    }
+            });
             //Scroll pane to be able to view all items in table
             spProducts = new JScrollPane(table);
             //scroll settings
@@ -887,291 +915,536 @@ public class Robin extends JFrame implements ActionListener{
             panelSearch.add(subCatTxt);
             panelSearch.add(labelBackground);
         }
-        public void account(){            
-            //USER INFO
-            //name, last, bday, address, sex, email, phone
-            final String fname, lname, bday, address, email, phone, gender;
-            char sex;
-            fname = currentUser.userFName;
-            lname = currentUser.userLName;
-            address = currentUser.address;
-            bday = currentUser.bDate;
-            sex = currentUser.sex;
-            email = currentUser.email;
-            phone = currentUser.phone;
-            if(sex == 'F')
-                gender = "Female";
-            else
-                gender = "Male";
-            TableModel dataModel1 = new AbstractTableModel() {
-                public boolean isCellEditable(int row, int col)
-                { return true; }
-            //setting number of columns
-            public int getColumnCount() { return 2; }
-            //number of rows
-            public int getRowCount() { return 6;}
-            //fetching details of user from linked list
-            public Object getValueAt(int row, int col) { 
-                String strTable = "\t";
-                if(col == 0){
-                switch(row){
-                    case 0:
-                        strTable = "<html> <b>" + "&nbsp;" + fname + " "  + lname + "</html>";
-                        break; 
-                    case 1:
-                        strTable += "Address: " + address;
-                        break;
-                    case 2:
-                        strTable += "Date of birth: " +bday;
-                        break;
-                    case 3:
-                        strTable += "Phone number: " +phone;
-                        break;
-                    case 4:
-                        strTable += "Gender: " +gender;
-                        break;
-                    default:
-                        strTable += "Email address: " +email;
-                        break;
-                }
-                return strTable;
-                }
-                if(col == 1 && row != 0) {
-                        Image modify;
-                            modify = Toolkit.getDefaultToolkit().getImage
-                            (this.getClass().getResource("modifyBtn.png"));
-                        return new ImageIcon(modify);
-                }
-                return null;
+        
+    public void account(){ 
+        //user info
+        TableModel dataModel1 = new AbstractTableModel() {
+            //public boolean isCellEditable(int row, int col)
+            //{ return true; }
+        //setting number of columns
+        public int getColumnCount() { return 2; }
+        //number of rows
+        public int getRowCount() { return 5;}
+        //fetching details of user from linked list
+        public Object getValueAt(int row, int col) { 
+            String strTable = "\t";
+            if(col == 0){
+            switch(row){
+                case 0:
+                    strTable = "<html> <b>" + "&nbsp;" + currentUser.userFName + " "  +  currentUser.userLName + "</html>";
+                    break; 
+                case 1:
+                    strTable += "Address: " + currentUser.address;
+                    break;
+                case 2:
+                    strTable += "Date of birth: " + currentUser.bDate;
+                    break;
+                case 3:
+                    strTable += "Phone number: " +currentUser.phone;
+                    break;
+                case 4:
+                    strTable += "Email address: " + currentUser.email;
+                    break;
             }
-            public Class getColumnClass(int col) { return getValueAt(1, col).getClass();}
-          };
-             //create table to display name of products
-            JTable table1 = new JTable(dataModel1);
-            table1.setRowHeight(50);
-            table1.getColumnModel().getColumn(0).setPreferredWidth(275);
-            table1.getColumnModel().getColumn(1).setPreferredWidth(25);
-            table1.setBackground(new Color(225, 225, 225,120));
-            table1.setOpaque(false);
-            table1.setShowGrid(false);
-            table1.setTableHeader(null);
-            table1.setSelectionBackground(new Color(0, 0 , 0 , 0));
-            table1.setFont(new Font("Helvetica", Font.PLAIN, 20));
-            table1.setLocation(100, 200);
-            table1.setRowSelectionAllowed(false);
-            table1.setVisible(true);
-            //Scroll pane to be able to view all items in table
-            spUserData = new JScrollPane(table1);
-            //scroll settings
-            spUserData.setBounds(50, 150, 400, 250);
-            spUserData.setOpaque(false);
-            spUserData.getViewport().setOpaque(false);
-            spUserData.setBorder(createEmptyBorder());
-            spUserData.setVisible(true);
-            //WISHLIST
-            //dataModel for name of products
-            TableModel dataModel2 = new AbstractTableModel() {
-            //setting number of columns
-            public int getColumnCount() { return 2; }
-            //number of rows
-            public int getRowCount() { return wishlistLinked.size();}
-            //fetching name of products from linked list
-            public Object getValueAt(int row, int col) {
-                //first column
-                if(col == 0 && row == 0)
-                    return "<html><b>&nbsp;Your Wishlist: </html>";
+            return strTable;
+            }
+            
+            //save or edit buton
+            if(col == 1 && row == 0) {
+                ImageIcon first;
+                Image modify = Toolkit.getDefaultToolkit().getImage
+                    (this.getClass().getResource("modifyBtn.png"));
+                first = new ImageIcon(modify);
+                return first;
+            }
+
+            return null;
+        }
+        public Class getColumnClass(int col) { return getValueAt(0, col).getClass();}
+      };
+         //create table to display name of products
+        final JTable table1 = new JTable(dataModel1);
+        table1.setRowHeight(50);
+        table1.getColumnModel().getColumn(0).setPreferredWidth(275);
+        table1.getColumnModel().getColumn(1).setPreferredWidth(25);
+        table1.setBackground(new Color(225, 225, 225,120));
+        table1.setOpaque(false);
+        table1.setShowGrid(true);
+        table1.setShowVerticalLines(true);
+        table1.setGridColor(new Color(225, 225, 225,120));
+        table1.setTableHeader(null);
+        table1.setSelectionBackground(new Color(0, 0 , 0 , 0));
+        table1.setFont(new Font("Helvetica", Font.PLAIN, 20));
+        table1.setLocation(100, 200);
+        table1.setRowSelectionAllowed(false);
+        table1.setVisible(true);
+
+        //create text fields to edit
+        updateName = new JTextField(currentUser.userFName + " " + currentUser.userLName, 1);
+        updateName.setFont(new Font("Helvetica", Font.PLAIN, 16));
+        updateName.setForeground(Color.BLACK);
+        updateName.setBounds(53, 153, 319, 44);
+        updateName.setBorder(new LineBorder(new Color(255, 255, 255, 70), 10));
+        updateName.setVisible(false);
+        
+        //create text fields to edit
+        updateAddress = new JTextField(currentUser.address, 1);
+        updateAddress.setFont(new Font("Helvetica", Font.PLAIN, 16));
+        updateAddress.setForeground(Color.BLACK);
+        updateAddress.setBounds(53, 203, 319, 44);
+        updateAddress.setBorder(new LineBorder(new Color(255, 255, 255, 70), 10));
+        updateAddress.setVisible(false);
+        
+        //create text fields to edit
+        updateBday = new JTextField(currentUser.bDate, 1);
+        updateBday.setFont(new Font("Helvetica", Font.PLAIN, 16));
+        updateBday.setForeground(Color.BLACK);
+        updateBday.setBounds(53, 253, 319, 44);
+        updateBday.setBorder(new LineBorder(new Color(255, 255, 255, 70), 10));
+        updateBday.setVisible(false);
+        
+        //create text fields to edit
+        updatePhone = new JTextField(currentUser.phone, 1);
+        updatePhone.setFont(new Font("Helvetica", Font.PLAIN, 16));
+        updatePhone.setForeground(Color.BLACK);
+        updatePhone.setBounds(53, 303, 319, 44);
+        updatePhone.setBorder(new LineBorder(new Color(255, 255, 255, 70), 10));
+        updatePhone.setVisible(false);
+        
+        //create text fields to edit
+        updateEmail = new JTextField(currentUser.email, 1);
+        updateEmail.setFont(new Font("Helvetica", Font.PLAIN, 16));
+        updateEmail.setForeground(Color.BLACK);
+        updateEmail.setBounds(53, 353, 319, 44);
+        updateEmail.setBorder(new LineBorder(new Color(255, 255, 255, 70), 10));
+        updateEmail.setVisible(false);
+
+        //user info
+        TableModel dataModelUPDATE = new AbstractTableModel() {
+            //public boolean isCellEditable(int row, int col)
+            //{ return true; }
+        //setting number of columns
+        public int getColumnCount() { return 2; }
+        //number of rows
+        public int getRowCount() { return 5;}
+        //fetching details of user from linked list
+        public Object getValueAt(int row, int col) { 
+            String strTable = "\t";
+            if(col == 0){
+            switch(row){
+                case 0:
+                    strTable = "<html> <b>" + "&nbsp;" + currentUser.userFName + " "  +  currentUser.userLName + "</html>";
+                    break; 
+                case 1:
+                    strTable += "Address: " + currentUser.address;
+                    break;
+                case 2:
+                    strTable += "Date of birth: " + currentUser.bDate;
+                    break;
+                case 3:
+                    strTable += "Phone number: " +currentUser.phone;
+                    break;
+                case 4:
+                    strTable += "Email address: " + currentUser.email;
+                    break;
+            }
+            return strTable;
+            }
+            
+            
+            //save or edit buton
+            if(col == 1 && row == 0) {
+                ImageIcon first;
+                Image modify = Toolkit.getDefaultToolkit().getImage
+                (this.getClass().getResource("save1.png"));
+                first = new ImageIcon(modify);
+                return first;
+            }
+            
+            //cancel button
+            if(col == 1 && row == 1) {
+                ImageIcon second;
+                second = new ImageIcon(Toolkit.getDefaultToolkit().getImage
+                    (this.getClass().getResource("cancel1.png")));
+                return second;
+            }
+            
+           
+            
+            return null;
+        }
+        
+        public Class getColumnClass(int col) { return getValueAt(0, col).getClass();}
+      };
+        
+         //create table to display name of products
+        final JTable tableUPDATE = new JTable(dataModelUPDATE);
+        tableUPDATE.setRowHeight(50);
+        tableUPDATE.getColumnModel().getColumn(0).setPreferredWidth(275);
+        tableUPDATE.getColumnModel().getColumn(1).setPreferredWidth(25);
+        tableUPDATE.setBackground(new Color(225, 225, 225,120));
+        tableUPDATE.setOpaque(false);
+        tableUPDATE.setShowGrid(true);
+        tableUPDATE.setShowVerticalLines(true);
+        tableUPDATE.setGridColor(new Color(225, 225, 225,120));
+        tableUPDATE.setTableHeader(null);
+        tableUPDATE.setSelectionBackground(new Color(0, 0 , 0 , 0));
+        tableUPDATE.setFont(new Font("Helvetica", Font.PLAIN, 20));
+        tableUPDATE.setLocation(100, 200);
+        tableUPDATE.setRowSelectionAllowed(false);
+        tableUPDATE.setVisible(true);
+        
+        table1.addMouseListener(new MouseAdapter() {
+                public void mouseClicked(MouseEvent e) {
+                    
+                    //if clicked once
+                    if(e.getClickCount() == 1){
+                        //get selection from table
+                        JTable target = (JTable)e.getSource();
+                        int row = target.getSelectedRow();
+                        int column = target.getSelectedColumn();
+
+                        //clicked on save or edit
+                        if(column == 1 && row == 0) {
+
+                            //refreshes table
+                            table1.getValueAt(row, column);
+                            table1.getValueAt(row+1, column);
+                            table1.revalidate();
+                            table1.repaint();
+
+                            //starts edit if modifying table
+                            spUserData.setVisible(false);
+                            spUserDataUPDATE.setVisible(true);
+                        }                              
+                    }
+                }
+        });
+        
+        tableUPDATE.addMouseListener(new MouseAdapter() {
+                    public void mouseClicked(MouseEvent e2) {
+                        //if clicked once
+                        if(e2.getClickCount() == 1){
+                            //get selection from table
+                            JTable target = (JTable)e2.getSource();
+                            int row = target.getSelectedRow();
+                            int column = target.getSelectedColumn();
+                            
+                            //clicked on save or edit
+                            if(column == 1 && row == 0) {
+                                System.out.println("SAVE EDIT");
+                                spUserDataUPDATE.setVisible(false);
+                                spUserData.setVisible(true);
+                                updateName.setVisible(false);
+                                updateAddress.setVisible(false);
+                                updateBday.setVisible(false);
+                                updatePhone.setVisible(false);
+                                updateEmail.setVisible(false);
+                                
+                                saveEdit();
+                                
+                                //refresh variable
+                                updateName.setText(currentUser.userFName +
+                                        " " + currentUser.userLName);
+                                updateAddress.setText(currentUser.address);
+                                updateBday.setText(currentUser.bDate);
+                                updatePhone.setText(currentUser.phone);
+                                updateEmail.setText(currentUser.email);
+                                
+                                //refreshes table
+                                tableUPDATE.getValueAt(row, column);
+                                tableUPDATE.getValueAt(row+1, column);
+                                tableUPDATE.revalidate();
+                                tableUPDATE.repaint();
+                            }
+                            
+                            //clicked on cancel
+                            if(column == 1 && row == 1) {
+                                System.out.println("CANCEL EDIT");
+                                spUserDataUPDATE.setVisible(false);
+                                spUserData.setVisible(true);
+                                updateName.setVisible(false);
+                                updateAddress.setVisible(false);
+                                updateBday.setVisible(false);
+                                updatePhone.setVisible(false);
+                                updateEmail.setVisible(false);
+                                
+                                //refresh variable
+                                updateName.setText(currentUser.userFName +
+                                        " " + currentUser.userLName);
+                                updateAddress.setText(currentUser.address);
+                                updateBday.setText(currentUser.bDate);
+                                updatePhone.setText(currentUser.phone);
+                                updateEmail.setText(currentUser.email);
+                                
+                                //refreshes table
+                                tableUPDATE.getValueAt(row, column);
+                                tableUPDATE.getValueAt(row+1, column);
+                                tableUPDATE.revalidate();
+                                tableUPDATE.repaint();
+                            }
+                            
+                            if (column == 0 && row == 0) {
+                                System.out.println("EDIT NAME");
+                                updateName.setVisible(true); 
+                            }
+                            
+                            if (column == 0 && row == 1) {
+                                System.out.println("EDIT ADDRESS");
+                                updateAddress.setVisible(true); 
+                            }
+                            
+                            if (column == 0 && row == 2) {
+                                System.out.println("EDIT BIRTHDAY");
+                                updateBday.setVisible(true); 
+                            }
+                            
+                            if (column == 0 && row == 3) {
+                                System.out.println("EDIT PHONE");
+                                updatePhone.setVisible(true); 
+                            }
+                            
+                            if (column == 0 && row == 4) {
+                                System.out.println("EDIT EMAIL");
+                                updateEmail.setVisible(true); 
+                            }
+                            
+                        }
+                    }
+            });
+
+        //Scroll pane to be able to view all items in table
+        spUserData = new JScrollPane(table1);
+        //scroll settings
+        spUserData.setBounds(50, 150, 400, 250);
+        spUserData.setOpaque(false);
+        spUserData.getViewport().setOpaque(false);
+        spUserData.setBorder(createEmptyBorder());
+        spUserData.setVisible(true);
+        
+        //Scroll pane to be able to view all items in table
+        spUserDataUPDATE = new JScrollPane(tableUPDATE);
+        //scroll settings
+        spUserDataUPDATE.setBounds(50, 150, 400, 250);
+        spUserDataUPDATE.setOpaque(false);
+        spUserDataUPDATE.getViewport().setOpaque(false);
+        spUserDataUPDATE.setBorder(createEmptyBorder());
+        spUserDataUPDATE.setVisible(false);
+        
+        //WISHLIST
+        //dataModel for name of products
+        TableModel dataModel2 = new AbstractTableModel() {
+        //setting number of columns
+        public int getColumnCount() { return 2; }
+        //number of rows
+        public int getRowCount() { return wishlistLinked.size();}
+        //fetching name of products from linked list
+        public Object getValueAt(int row, int col) {
+            //first column
+            if(col == 0 && row == 0)
+                return "<html><b>&nbsp;Your Wishlist: </html>";
+            else{
+            if(wishlistLinked.size() > 1){
+            if (col == 0){
+                String nombre = "";
+                if(row == 0)
+                    nombre = "<html><b>&nbsp;Your Wishlist: </html>";
                 else{
-                if(wishlistLinked.size() > 1){
-                if (col == 0){
-                    String nombre = "";
-                    if(row == 0)
-                        nombre = "<html><b>&nbsp;Your Wishlist: </html>";
+                int num = row;
+                Object base = wishlistLinked.get(num);
+                Product aux = (Product) base;
+                nombre +="<html> &nbsp;" + aux.productName;
+                    nombre +="<html> <br>&nbsp;" + aux.productDesc;
+                    nombre +="<html> <br>&nbsp;Product Key: " + aux.productKey;
+                    nombre +="<html> <br>&nbsp;Subcategory ID: " + aux.subCategoryId;
+                    nombre +="<html> <br>&nbsp;$" + aux.unitPrice;
+                    nombre +="<html> <br>&nbsp;Owner: " + aux.userId + "</html>";
+                }
+                return nombre;
+            }
+            if(col == 1 && row != 0) {
+                    Object base = wishlistLinked.get(row);
+                    Product aux = (Product) base;
+                    Image star;
+                    if (isOnWishlist(aux.productId)){
+                        star = Toolkit.getDefaultToolkit().getImage
+                        (this.getClass().getResource("starS.png"));
+                    }
                     else{
-                    int num = row;
-                    Object base = wishlistLinked.get(num);
+                        star = Toolkit.getDefaultToolkit().getImage
+                       (this.getClass().getResource("starU.png"));
+                    }
+                    return new ImageIcon(star);
+            }
+            }
+
+            return "";
+            }
+        }
+        public Class getColumnClass(int col) { return getValueAt(1, col).getClass();}
+      };
+        //create table to display name of products
+        final JTable table2 = new JTable(dataModel2);
+        //the listener will recognize the user clicking a cell
+        table2.addMouseListener(new MouseAdapter() {
+                public void mouseClicked(MouseEvent e) {
+                        //if clicked once
+                        if(e.getClickCount() == 1){
+                                //get selection from table
+                                JTable target = (JTable)e.getSource();
+                                int row = target.getSelectedRow();
+                                int column = target.getSelectedColumn();
+                                //gets selection
+                                if(column == 1) {
+                                    Image starS = Toolkit.getDefaultToolkit().getImage
+                                    (this.getClass().getResource("starS.png"));
+                                    ImageIcon starSicon = new ImageIcon(starS);
+                                    Image starU = Toolkit.getDefaultToolkit().getImage
+                                    (this.getClass().getResource("starU.png"));                                        
+                                    ImageIcon starUicon = new ImageIcon(starU);
+                                    //find product
+                                    Object base = wishlistLinked.get(row);
+                                    Product aux = (Product) base;
+                                    //add product to wish list if not in wish list
+                                    if (!isOnWishlist(aux.productId)){
+                                        addWishList(aux.productId);
+                                    }
+                                    //if not in wish list remove
+                                    else{
+                                        removeWishList(aux.productId);
+                                    }
+                                    //refreshes table
+                                    table2.getValueAt(row, column);
+                                    table2.revalidate();
+                                    table2.repaint();
+                                }}}});
+        //table settings
+        table2.setRowHeight(170);
+        table2.setRowHeight(0, 50);
+        table2.getColumnModel().getColumn(0).setPreferredWidth(600);
+        table2.getColumnModel().getColumn(1).setPreferredWidth(100);
+        table2.setBackground(new Color(225, 225, 225,120));
+        table2.setOpaque(false);
+        table2.setShowGrid(false);
+        table2.setTableHeader(null);
+        table2.setSelectionBackground(new Color(0, 0 , 0 , 0));
+        table2.setFont(new Font("Helvetica", Font.PLAIN, 20));
+        table2.setLocation(400, 200);
+        table2.setRowSelectionAllowed(false);
+        table2.setVisible(true);
+        //Scroll pane to be able to view all items in table
+        spWishlist = new JScrollPane(table2);
+        //scroll settings
+        spWishlist.setBounds(500, 150, 750, 250);
+        spWishlist.setOpaque(false);
+        spWishlist.getViewport().setOpaque(false);
+        spWishlist.setBorder(createEmptyBorder());
+        spWishlist.setVisible(true);
+        //find uploaded products
+        ProdUploaded();
+        //PRODUCTS BY USER
+         //dataModel for name of products
+        TableModel dataModel3 = new AbstractTableModel() {
+        //setting number of columns
+        public int getColumnCount() { return 2; }
+        //number of rows
+        public int getRowCount() { return products.size() - 1;}
+        //fetching name of products from linked list
+        public Object getValueAt(int row, int col) { 
+            String nombre = "";
+            int num;
+            if(col == 0){
+                if(row == 0)
+                    nombre = "<html><b>&nbsp;Your Products: </html>";
+                else{
+                    num = row+1;
+                    Object base = products.get(num);
                     Product aux = (Product) base;
                     nombre +="<html> &nbsp;" + aux.productName;
-                        nombre +="<html> <br>&nbsp;" + aux.productDesc;
-                        nombre +="<html> <br>&nbsp;Product Key: " + aux.productKey;
-                        nombre +="<html> <br>&nbsp;Subcategory ID: " + aux.subCategoryId;
-                        nombre +="<html> <br>&nbsp;$" + aux.unitPrice;
-                        nombre +="<html> <br>&nbsp;Owner: " + aux.userId + "</html>";
-                    }
-                    return nombre;
+                    nombre +="<html> <br>&nbsp;" + aux.productDesc;
+                    nombre +="<html> <br>&nbsp;Product Key: " + aux.productKey;
+                    nombre +="<html> <br>&nbsp;Subcategory ID: " + aux.subCategoryId;
+                    nombre +="<html> <br>&nbsp;$" + aux.unitPrice;
+                    nombre +="<html> <br>&nbsp;Owner: " + aux.userId + "</html>";
                 }
-                if(col == 1 && row != 0) {
-                        Object base = wishlistLinked.get(row);
-                        Product aux = (Product) base;
-                        Image star;
-                        if (isOnWishlist(aux.productId)){
-                            star = Toolkit.getDefaultToolkit().getImage
-                            (this.getClass().getResource("starS.png"));
-                        }
-                        else{
-                            star = Toolkit.getDefaultToolkit().getImage
-                           (this.getClass().getResource("starU.png"));
-                        }
-                        return new ImageIcon(star);
-                }
-                }
-                
-                return "";
-                }
+                return nombre;
             }
-            public Class getColumnClass(int col) { return getValueAt(1, col).getClass();}
-          };
-            //create table to display name of products
-            final JTable table2 = new JTable(dataModel2);
-            //the listener will recognize the user clicking a cell
-            table2.addMouseListener(new MouseAdapter() {
-                    public void mouseClicked(MouseEvent e) {
-                            //if clicked once
-                            if(e.getClickCount() == 1){
-                                    //get selection from table
-                                    JTable target = (JTable)e.getSource();
-                                    int row = target.getSelectedRow();
-                                    int column = target.getSelectedColumn();
-                                    //gets selection
-                                    if(column == 1) {
-                                        Image starS = Toolkit.getDefaultToolkit().getImage
-                                        (this.getClass().getResource("starS.png"));
-                                        ImageIcon starSicon = new ImageIcon(starS);
-                                        Image starU = Toolkit.getDefaultToolkit().getImage
-                                        (this.getClass().getResource("starU.png"));                                        
-                                        ImageIcon starUicon = new ImageIcon(starU);
-                                        //find product
-                                        Object base = wishlistLinked.get(row);
-                                        Product aux = (Product) base;
-                                        //add product to wish list if not in wish list
-                                        if (!isOnWishlist(aux.productId)){
-                                            addWishList(aux.productId);
-                                        }
-                                        //if not in wish list remove
-                                        else{
-                                            removeWishList(aux.productId);
-                                        }
-                                        //refreshes table
-                                        table2.getValueAt(row, column);
-                                        table2.revalidate();
-                                        table2.repaint();
-                                    }}}});
-            //table settings
-            table2.setRowHeight(170);
-            table2.setRowHeight(0, 50);
-            table2.getColumnModel().getColumn(0).setPreferredWidth(600);
-            table2.getColumnModel().getColumn(1).setPreferredWidth(100);
-            table2.setBackground(new Color(225, 225, 225,120));
-            table2.setOpaque(false);
-            table2.setShowGrid(false);
-            table2.setTableHeader(null);
-            table2.setSelectionBackground(new Color(0, 0 , 0 , 0));
-            table2.setFont(new Font("Helvetica", Font.PLAIN, 20));
-            table2.setLocation(400, 200);
-            table2.setRowSelectionAllowed(false);
-            table2.setVisible(true);
-            //Scroll pane to be able to view all items in table
-            spWishlist = new JScrollPane(table2);
-            //scroll settings
-            spWishlist.setBounds(500, 150, 750, 250);
-            spWishlist.setOpaque(false);
-            spWishlist.getViewport().setOpaque(false);
-            spWishlist.setBorder(createEmptyBorder());
-            spWishlist.setVisible(true);
-            //find uploaded products
-            ProdUploaded();
-            //PRODUCTS BY USER
-             //dataModel for name of products
-            TableModel dataModel3 = new AbstractTableModel() {
-            //setting number of columns
-            public int getColumnCount() { return 2; }
-            //number of rows
-            public int getRowCount() { return products.size() - 1;}
-            //fetching name of products from linked list
-            public Object getValueAt(int row, int col) { 
-                String nombre = "";
-                int num;
-                if(col == 0){
-                    if(row == 0)
-                        nombre = "<html><b>&nbsp;Your Products: </html>";
-                    else{
-                        num = row+1;
-                        Object base = products.get(num);
-                        Product aux = (Product) base;
-                        nombre +="<html> &nbsp;" + aux.productName;
-                        nombre +="<html> <br>&nbsp;" + aux.productDesc;
-                        nombre +="<html> <br>&nbsp;Product Key: " + aux.productKey;
-                        nombre +="<html> <br>&nbsp;Subcategory ID: " + aux.subCategoryId;
-                        nombre +="<html> <br>&nbsp;$" + aux.unitPrice;
-                        nombre +="<html> <br>&nbsp;Owner: " + aux.userId + "</html>";
-                    }
-                    return nombre;
-                }
-                if(col == 1 && row != 0) {
-                        Object base = products.get(row);
-                        Product aux = (Product) base;
-                        Image trash;
-                            trash = Toolkit.getDefaultToolkit().getImage
-                            (this.getClass().getResource("trash.png"));
-                        return new ImageIcon(trash);
-                }
-                return null;
+            if(col == 1 && row != 0) {
+                    Object base = products.get(row);
+                    Product aux = (Product) base;
+                    Image trash;
+                        trash = Toolkit.getDefaultToolkit().getImage
+                        (this.getClass().getResource("trash.png"));
+                    return new ImageIcon(trash);
             }
-            public Class getColumnClass(int col) { return getValueAt(1, col).getClass();}
-          };
-            //create table to display name of products
-            final JTable table3 = new JTable(dataModel3);
-            
-            table3.addMouseListener(new MouseAdapter() {
-                    public void mouseClicked(MouseEvent e) {
-                            //if clicked once
-                            if(e.getClickCount() == 1){
-                                    //get selection from table
-                                    JTable target = (JTable)e.getSource();
-                                    int row = target.getSelectedRow();
-                                    int column = target.getSelectedColumn();
-                                    //gets selection
-                                    if(column == 1) {
-                                        //find product
-                                        Object base = products.get(row);
-                                        Product aux = (Product) base;
-                                        //remove product;
-                                            removeOwn(aux.productId);
-                                            table3.getValueAt(row, column);
-                                            table3.revalidate();
-                                            table3.repaint();
-                                    }}}});
-            //table settings
-            table3.setRowHeight(170);
-            table3.setRowHeight(0, 50);
-            table3.getColumnModel().getColumn(0).setPreferredWidth(600);
-            table3.getColumnModel().getColumn(1).setPreferredWidth(100);
-            table3.setBackground(new Color(225, 225, 225,120));
-            table3.setOpaque(false);
-            table3.setShowGrid(false);
-            table3.setTableHeader(null);
-            table3.setSelectionBackground(new Color(0, 0 , 0 , 0));
-            table3.setFont(new Font("Helvetica", Font.PLAIN, 20));
-            table3.setLocation(400, 200);
-            table3.setRowSelectionAllowed(false);
-            table3.setVisible(true);
-            //Scroll pane to be able to view all items in table
-            spOwnProduct = new JScrollPane(table3);
-            //scroll settings
-            spOwnProduct.setBounds(500, 450, 750, 225);
-            spOwnProduct.setOpaque(false);
-            spOwnProduct.getViewport().setOpaque(false);
-            spOwnProduct.setBorder(createEmptyBorder());
-            spOwnProduct.setVisible(true);
-            panelAccount.setSize(1300, labelBackground.getHeight());
-            //paints FIX
-            panelAccount.add(spWishlist);
-            panelAccount.add(spUserData);
-            panelAccount.add(spOwnProduct);
-            panelAccount.add(labelBackground);
-            panelAccount.setVisible(true);
-            panelAccount.setBorder(BorderFactory.createLineBorder(Color.red));
-            panelAccount.setLayout(null);
+            return null;
         }
+        public Class getColumnClass(int col) { return getValueAt(1, col).getClass();}
+      };
+        //create table to display name of products
+        final JTable table3 = new JTable(dataModel3);
+
+        table3.addMouseListener(new MouseAdapter() {
+                public void mouseClicked(MouseEvent e) {
+                        //if clicked once
+                        if(e.getClickCount() == 1){
+                                //get selection from table
+                                JTable target = (JTable)e.getSource();
+                                int row = target.getSelectedRow();
+                                int column = target.getSelectedColumn();
+                                //gets selection
+                                if(column == 1) {
+                                    //find product
+                                    Object base = products.get(row);
+                                    Product aux = (Product) base;
+                                    //remove product;
+                                        removeOwn(aux.productId);
+                                        table3.getValueAt(row, column);
+                                        table3.revalidate();
+                                        table3.repaint();
+                                }}}});
+        //table settings
+        table3.setRowHeight(170);
+        table3.setRowHeight(0, 50);
+        table3.getColumnModel().getColumn(0).setPreferredWidth(600);
+        table3.getColumnModel().getColumn(1).setPreferredWidth(100);
+        table3.setBackground(new Color(225, 225, 225,120));
+        table3.setOpaque(false);
+        table3.setShowGrid(false);
+        table3.setTableHeader(null);
+        table3.setSelectionBackground(new Color(0, 0 , 0 , 0));
+        table3.setFont(new Font("Helvetica", Font.PLAIN, 20));
+        table3.setLocation(400, 200);
+        table3.setRowSelectionAllowed(false);
+        table3.setVisible(true);
+        //Scroll pane to be able to view all items in table
+        spOwnProduct = new JScrollPane(table3);
+        //scroll settings
+        spOwnProduct.setBounds(500, 450, 750, 225);
+        spOwnProduct.setOpaque(false);
+        spOwnProduct.getViewport().setOpaque(false);
+        spOwnProduct.setBorder(createEmptyBorder());
+        spOwnProduct.setVisible(true);
+        panelAccount.setSize(1300, labelBackground.getHeight());
+        //add to panel account
+        panelAccount.add(updateName);
+        panelAccount.add(updateBday);
+        panelAccount.add(updateAddress);
+        panelAccount.add(updatePhone);
+        panelAccount.add(updateEmail);
+        
+        panelAccount.add(spWishlist);
+        panelAccount.add(spUserData);
+        panelAccount.add(spUserDataUPDATE);
+        panelAccount.add(spOwnProduct);
+        panelAccount.add(labelBackground);
+        
+        panelAccount.setVisible(true);
+        panelAccount.setBorder(BorderFactory.createLineBorder(Color.red));
+        panelAccount.setLayout(null);
+        
+        
+    }
         //user logs in
         public void actionPerformed(ActionEvent e){ 
         //validate login
@@ -1192,6 +1465,16 @@ public class Robin extends JFrame implements ActionListener{
             label.setText("Login failed, try again");
         }
     }
+
+    //method that saves edit
+    public void saveEdit(){
+        //call query to update user with update variable
+        
+        //update current user
+        
+    } 
+
+        
     public static void main(String[] args) {
         new Robin();
     }
